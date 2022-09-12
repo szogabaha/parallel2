@@ -1,0 +1,1 @@
+# Numerical integration using trapezoids

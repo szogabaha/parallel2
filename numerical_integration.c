@@ -4,6 +4,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <string.h>
+#include <stdint.h>
 
 #define MAX_ARG_LEN 32
 
@@ -24,7 +25,7 @@ static int threads_number;
 static int trapezoids_number;
 
 // this must be an atomic variable
-static double area_sum = 0.0;
+// static double area_sum = 0.0;
 
 // function 4/(1+x^2)
 static inline double test_func(double x)
@@ -83,32 +84,70 @@ void parse_args(int argc, char *argv[])
         usage();
         exit(0);
     }
+    // for (size_t i = 0; i < argc; i++)
+    // {
+    //     printf("%s\n", argv[i]);
+    // }
+    
+}
+
+void* hello_thread(void* parameters)
+{
+    int id = (intptr_t)parameters;
+    printf("Hello from pthread %d\n", id);
+    return NULL;
 }
 
 int main(int argc, char *argv[])
 {
     parse_args(argc, argv);
-    // lets make sequential first
-    int max_trapezoids_number = 10000000;
-
-    for (size_t trapezoid_number = 1; trapezoid_number <= max_trapezoids_number; trapezoid_number += 100000)
+    
+    // Let's allocate the memory for the threads
+    pthread_t* pthreads = (pthread_t*)malloc(sizeof(pthread_t) * threads_number);
+    if(pthreads == NULL)
     {
-        double sum = 0.0;
-        printf("--- Area with %ld trapezius ---\n", trapezoid_number);
-        double step = interval_step(trapezoid_number);
-        double d = 0.0;
-        double h = step;
-        int count = 0;
-        while (count < trapezoid_number)
-        {
-            double b1 = test_func(d);
-            d += h;
-            double b2 = test_func(step);
-            step += h;
-            sum += trapezoid_area(b1, b2, h);
-            count++;
-        }
-        printf("%.36f\n", sum);
+        printf("Error allocating memory\n");
+        exit(-1);
     }
-    printf("math.h PI=3.141592653589793238462643383279502884\n");
+    for (int i = 0; i < threads_number; i++)
+    {
+        int rc = pthread_create(&pthreads[i], NULL, hello_thread, (void *)(intptr_t)i);
+        if(rc != 0)
+        {
+            printf("Failed to create pthread\n");
+            goto cleanup;
+        }
+    }
+    
+
+    // int max_trapezoids_number = 10000000;
+
+    // for (size_t trapezoid_number = 1; trapezoid_number <= max_trapezoids_number; trapezoid_number += 100000)
+    // {
+    //     double sum = 0.0;
+    //     printf("--- Area with %ld trapezius ---\n", trapezoid_number);
+    //     double step = interval_step(trapezoid_number);
+    //     double d = 0.0;
+    //     double h = step;
+    //     int count = 0;
+    //     while (count < trapezoid_number)
+    //     {
+    //         double b1 = test_func(d);
+    //         d += h;
+    //         double b2 = test_func(step);
+    //         step += h;
+    //         sum += trapezoid_area(b1, b2, h);
+    //         count++;
+    //     }
+    //     printf("%.36f\n", sum);
+    // }
+    // printf("math.h PI=3.141592653589793238462643383279502884\n");
+    for (int i = 0; i < threads_number; i++)
+    {
+        pthread_join(pthreads[i], NULL);
+    }
+    
+
+cleanup:
+    free(pthreads);
 }

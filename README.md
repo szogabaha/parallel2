@@ -6,3 +6,5 @@ The integral calculation is fair, so we do need to load balance the work of the 
 ```
 $: ./numerical_integration -threads T -trapezoids N
 ```
+
+https://stackoverflow.com/questions/21323628/warning-cast-to-from-pointer-from-to-integer-of-different-size

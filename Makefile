@@ -15,5 +15,8 @@ sanitize: $(BIN)
 %: %.c
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
+check:
+	cppcheck --enable=all  .
+
 clean:
 	rm -rf $(BIN)

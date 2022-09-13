@@ -1,48 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
-#include <math.h>
 #include <pthread.h>
 #include <string.h>
 #include <stdint.h>
+#include <math.h>
 
 #define MAX_ARG_LEN 32
 
-/** Calculation process:
- * 1) Evaluate the value of the function in x1 to get b1. b1 = f(x1)
- * 2) Evaluate the value of the function in x2 to get b2. b2 = f(x2)
- * 3) h = x2 - x1
- */
+#define F(x) \
+    4.0 / (1 + (x * x))
 
-/** Distribution of the work
- * 1) the main thread calculates how many trapezoids each thread need to calculate: n = N/T
- * 2) each thread has a local variable as a partial sum that will add to the entire sum (which is protected by a mutex)
- */
+#define AREA(b1, b2, h) \
+    ((b1 + b2) * h) / 2
 
 const double INTERVAL = 1.0;
 
 static int threads_number;
 static int trapezoids_number;
 
-// this must be an atomic variable
-// static double area_sum = 0.0;
-
-// function 4/(1+x^2)
-static inline double test_func(double x)
-{
-    return 4 / (1 + (x * x));
-}
-
-// Area of trapezoid
-static inline double trapezoid_area(double b1, double b2, double h)
-{
-    return ((b1 + b2) * h) / 2;
-}
-
-static inline double interval_step(int trapezoids_number)
-{
-    return (double)INTERVAL / trapezoids_number;
-}
+pthread_mutex_t sum_mutex;
+static double area_sum = 0.0;
 
 void usage(void)
 {
@@ -66,87 +44,106 @@ void parse_args(int argc, char *argv[])
         usage();
         exit(0);
     }
-    else if((threads_number = atoi(argv[2])) == 0) // the user insert zero or non-valid string
+    else if ((threads_number = atoi(argv[2])) == 0) // the user insert zero or non-valid string
     {
         printf("Invalid threads number!\n");
         usage();
         exit(0);
     }
-    else if(strncmp("-n", argv[3], MAX_ARG_LEN))
+    else if (strncmp("-n", argv[3], MAX_ARG_LEN))
     {
         printf("Unrecognized argument %s\n", argv[3]);
         usage();
         exit(0);
     }
-    else if((trapezoids_number = atoi(argv[4])) == 0) // the user insert zero or non-valid string
+    else if ((trapezoids_number = atoi(argv[4])) == 0) // the user insert zero or non-valid string
     {
         printf("Invalid trapezoids number!\n");
         usage();
         exit(0);
     }
-    // for (size_t i = 0; i < argc; i++)
-    // {
-    //     printf("%s\n", argv[i]);
-    // }
-    
 }
 
-void* hello_thread(void* parameters)
+void *hello_thread(void *parameters)
 {
     int id = (intptr_t)parameters;
     printf("Hello from pthread %d\n", id);
     return NULL;
 }
 
+typedef struct thread_data
+{
+    int trapezoid_number;
+    double h; // height of trapezoids
+    double start_from;
+} data_t;
+
+void *calculate_integral(void *parameters)
+{
+    data_t *data = (data_t *)(parameters);
+    printf("number:%d\nstart_from:%lf\nstep:%lf\n\n", data->trapezoid_number, data->start_from, data->h);
+    double partial_sum = 0.0;
+    int count = 0;
+    double x0 = data->start_from;
+    double x1 = x0 + data->h;
+    while (count < data->trapezoid_number)
+    {
+        double b1 = F(x0);
+        double b2 = F(x1);
+        partial_sum += AREA(b1, b2, data->h);
+        // update for the next cycle
+        x0 += data->h;
+        x1 += data->h;
+        ++count;
+    }
+    // finish to calculate, lets update the global variable
+    pthread_mutex_lock(&sum_mutex);
+    area_sum += partial_sum;
+    pthread_mutex_unlock(&sum_mutex);
+    free(data);
+    return NULL;
+}
+
 int main(int argc, char *argv[])
 {
     parse_args(argc, argv);
-    
+
+    // Calculate the height of trapezoids
+    double h = (double)INTERVAL / trapezoids_number;
+
+    if (pthread_mutex_init(&sum_mutex, NULL) == -1)
+    {
+        printf("Failed to create mutex!\n");
+        exit(0);
+    }
+
     // Let's allocate the memory for the threads
-    pthread_t* pthreads = (pthread_t*)malloc(sizeof(pthread_t) * threads_number);
-    if(pthreads == NULL)
+    pthread_t *pthreads = (pthread_t *)malloc(sizeof(pthread_t) * threads_number);
+    if (pthreads == NULL)
     {
         printf("Error allocating memory\n");
         exit(-1);
     }
+    int trapezoids_per_thread = trapezoids_number / threads_number;
     for (int i = 0; i < threads_number; i++)
     {
-        int rc = pthread_create(&pthreads[i], NULL, hello_thread, (void *)(intptr_t)i);
-        if(rc != 0)
+        data_t *data = (data_t *)calloc(1, sizeof(data_t));
+        data->trapezoid_number = trapezoids_per_thread;
+        data->h = h;
+        data->start_from = trapezoids_per_thread * i * h;
+        if (pthread_create(&pthreads[i], NULL, calculate_integral, (void *)data))
         {
             printf("Failed to create pthread\n");
             goto cleanup;
         }
     }
-    
-
-    // int max_trapezoids_number = 10000000;
-
-    // for (size_t trapezoid_number = 1; trapezoid_number <= max_trapezoids_number; trapezoid_number += 100000)
-    // {
-    //     double sum = 0.0;
-    //     printf("--- Area with %ld trapezius ---\n", trapezoid_number);
-    //     double step = interval_step(trapezoid_number);
-    //     double d = 0.0;
-    //     double h = step;
-    //     int count = 0;
-    //     while (count < trapezoid_number)
-    //     {
-    //         double b1 = test_func(d);
-    //         d += h;
-    //         double b2 = test_func(step);
-    //         step += h;
-    //         sum += trapezoid_area(b1, b2, h);
-    //         count++;
-    //     }
-    //     printf("%.36f\n", sum);
-    // }
-    // printf("math.h PI=3.141592653589793238462643383279502884\n");
     for (int i = 0; i < threads_number; i++)
     {
         pthread_join(pthreads[i], NULL);
     }
-    
+
+    printf("%28s:\t%.18f\n", "Integral approximated value", area_sum);
+    printf("%28s:\t%s\n", "math.h PI", "3.14159265358979323846");
 
 cleanup:
     free(pthreads);

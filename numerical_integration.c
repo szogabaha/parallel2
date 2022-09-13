@@ -116,7 +116,6 @@ int main(int argc, char *argv[])
         printf("Failed to create mutex!\n");
         exit(0);
     }
-
     // Let's allocate the memory for the threads
     pthread_t *pthreads = (pthread_t *)malloc(sizeof(pthread_t) * threads_number);
     if (pthreads == NULL)
@@ -125,17 +124,20 @@ int main(int argc, char *argv[])
         exit(-1);
     }
     int trapezoids_per_thread = trapezoids_number / threads_number;
+    int remaining_trapezoids = trapezoids_number % threads_number;
+    double next_start = 0.0;
     for (int i = 0; i < threads_number; i++)
     {
         data_t *data = (data_t *)calloc(1, sizeof(data_t));
-        data->trapezoid_number = trapezoids_per_thread;
+        data->trapezoid_number = trapezoids_per_thread + (remaining_trapezoids-- > 0 ? 1 : 0); // add one more trapezoid to a thread if T is not multiple than N 
         data->h = h;
-        data->start_from = trapezoids_per_thread * i * h;
+        data->start_from = next_start;
         if (pthread_create(&pthreads[i], NULL, calculate_integral, (void *)data))
         {
             printf("Failed to create pthread\n");
             goto cleanup;
         }
+        next_start += data->trapezoid_number * h;
     }
     for (int i = 0; i < threads_number; i++)
     {

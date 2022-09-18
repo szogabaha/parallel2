@@ -32,10 +32,21 @@ Reasoning backward:
 2. If she has set the flag `busy = true`, she must have read, in a prior moment, the flag `busy = false`
 3. If she has read `busy = false`, that means that Bob should have released the lock (setting `busy = false`)
 4. Contraddiction: from the hypotesis Bob still hold the lock.
-## [TODO] Is this protocol starvation-free?
-No
-## [TODO] Is this protocol deadlock-free?
-No
+## Is this protocol starvation-free?
+The protocol doesn't provide fairness and therefore starvation is not excluded by the protocol. In fact, it is up to the OS to provide a fair access to the lock.
+## Is this protocol deadlock-free?
+The lock is not deadlock-free. As we can see from the output, the execution blocks spinning on `busy`.
+How this can happen?
+Let's suppose we have two threads A and B.
+- A has the lock -> this means that `busy = true` and B is spinnig in the inner loop.
+- A releases the lock -> A set `busy = false`
+- A wants to grab the lock again 
+- B exits from the inner loop setting `busy = true`
+- B is going to check if he grabbed the lock looking if `turn == B-turn`
+- A changes turn to `A-turn`
+- B starts a new iteration
+
+In this new iteration, both of the threads are going to spin in the inner loop cause the variable `busy` is not resetted to false.
 
 ## Comparison Flaky lock vs std::mutex
 In order to check the behaviour of this lock compared with the one provided by the STL of C++ we have developed a small program to run with different locks.

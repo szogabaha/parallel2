@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 
 	/* example use of benchmarking */
 	{
-		sorted_list<int> l1;
+		list_cg_mutex<int> l1;
 		/* prefill list with 1024 elements */
 		for(int i = 0; i < DATA_PREFILL; i++) {
 			l1.insert(uniform_dist(engine));
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
 	}
 	{
 		/* start with fresh list: update test left list in random size */
-		sorted_list<int> l1;
+		list_cg_mutex<int> l1;
 		/* prefill list with 1024 elements */
 		for(int i = 0; i < DATA_PREFILL; i++) {
 			l1.insert(uniform_dist(engine));
@@ -83,12 +83,6 @@ int main(int argc, char* argv[]) {
 		benchmark(threadcnt, u8"non-thread-safe mixed", [&l1](int random){
 			mixed(l1, random);
 		});
-	}
-	{
-		list_cg_mutex<int> list;
-		list.insert(2);
-		std::cout << list.count(2) << std::endl;
-		list.remove(2);
 	}
 	return EXIT_SUCCESS;
 }

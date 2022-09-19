@@ -2,6 +2,7 @@
 #define LIST_CG_MUTEX_HPP
 
 #include "sorted_list.hpp"
+#include <mutex>
 /**
  * Sorted List with coarse-grained mutex
  */
@@ -11,6 +12,7 @@ class list_cg_mutex : public sorted_list<T>
 {
 private:
     node<T> *first = nullptr;
+    std::mutex mutex;
 
 public:
     list_cg_mutex() = default;
@@ -18,6 +20,7 @@ public:
     /* insert v into the list */
     void insert(T v)
     { // TODO add mutex
+        mutex.lock();
         /* first find position */
         node<T> *pred = nullptr;
         node<T> *succ = first;
@@ -41,10 +44,12 @@ public:
         {
             pred->next = current;
         }
+        mutex.unlock();
     }
 
     void remove(T v)
     { // TODO add mutex
+        mutex.lock();
         /* first find position */
         node<T> *pred = nullptr;
         node<T> *current = first;
@@ -56,6 +61,7 @@ public:
         if (current == nullptr || current->value != v)
         {
             /* v not found */
+            mutex.unlock();
             return;
         }
         /* remove current */
@@ -68,11 +74,13 @@ public:
             pred->next = current->next;
         }
         delete current;
+        mutex.unlock();
     }
 
     /* count elements with value v in the list */
     std::size_t count(T v)
     { // TODO add mutexes
+        mutex.lock();
         std::size_t cnt = 0;
         /* first go to value v */
         node<T> *current = first;
@@ -86,6 +94,7 @@ public:
             cnt++;
             current = current->next;
         }
+        mutex.unlock();
         return cnt;
     }
 };

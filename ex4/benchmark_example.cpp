@@ -6,6 +6,7 @@
 
 #include "benchmark.hpp"
 #include "sorted_list.hpp"
+#include "list_cg_mutex.hpp"
 
 static const int DATA_VALUE_RANGE_MIN = 0;
 static const int DATA_VALUE_RANGE_MAX = 256;
@@ -82,6 +83,12 @@ int main(int argc, char* argv[]) {
 		benchmark(threadcnt, u8"non-thread-safe mixed", [&l1](int random){
 			mixed(l1, random);
 		});
+	}
+	{
+		list_cg_mutex<int> list;
+		list.insert(2);
+		std::cout << list.count(2) << std::endl;
+		list.remove(2);
 	}
 	return EXIT_SUCCESS;
 }

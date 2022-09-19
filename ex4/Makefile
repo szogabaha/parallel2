@@ -6,15 +6,13 @@ INCLUDES=./include
 
 BIN=benchmark_example
 
-SRC=$(BIN).cpp
-
 SRCS:=$(wildcard *.cpp)
 OBJS:=$(patsubst %.cpp, %.o, $(SRCS))
 
 all: $(BIN)
 
-sanitize: CFLAGS += -fsanitize=thread
-sanitize: $(BIN)
+# sanitize: CFLAGS += -fsanitize=thread
+# sanitize: $(BIN)
 
 release: CFLAGS=-std=c++11 -O3 -Wall -Wpedantic -Werror -Wfloat-equal
 release: $(BIN)

@@ -11,8 +11,8 @@ OBJS:=$(patsubst %.cpp, %.o, $(SRCS))
 
 all: $(BIN)
 
-# sanitize: CFLAGS += -fsanitize=thread
-# sanitize: $(BIN)
+sanitize: CFLAGS += -fsanitize=thread
+sanitize: $(BIN)
 
 release: CFLAGS=-std=c++11 -O3 -Wall -Wpedantic -Werror -Wfloat-equal
 release: $(BIN)
@@ -25,7 +25,7 @@ $(BIN): $(OBJS)
 	$(CXX) $(CFLAGS) -c $< -o $@ -I$(INCLUDES)
 
 check:
-	cppcheck --enable=all  .
+	cppcheck --enable=all . -I $(INCLUDES) 
 
 clean:
 	rm -rf $(BIN)

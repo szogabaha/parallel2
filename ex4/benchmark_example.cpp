@@ -7,50 +7,75 @@
 #include "benchmark.hpp"
 #include "sorted_list.hpp"
 #include "list_cg_mutex.hpp"
+#include "list_fg_mutex.hpp"
+
+std::mutex debug;
+#define DEBUG(op, x)                                 \
+	debug.lock();                                    \
+	std::cout << std::hex << x << " " << op << " "; \
+	debug.unlock();
+
 
 static const int DATA_VALUE_RANGE_MIN = 0;
-static const int DATA_VALUE_RANGE_MAX = 256;
+static const int DATA_VALUE_RANGE_MAX = 15;
 static const int DATA_PREFILL = 512;
 
-template<typename List>
-void read(List& l, int random) {
+template <typename List>
+void read(List &l, int random)
+{
 	/* read operations: 100% count */
 	l.count(random % DATA_VALUE_RANGE_MAX);
 }
 
-template<typename List>
-void update(List& l, int random) {
+template <typename List>
+void update(List &l, int random)
+{
 	/* update operations: 50% insert, 50% remove */
 	auto choice = (random % (2*DATA_VALUE_RANGE_MAX))/DATA_VALUE_RANGE_MAX;
+	int val = random % DATA_VALUE_RANGE_MAX;
 	if(choice == 0) {
+		// DEBUG("INSERT", std::this_thread::get_id());
 		l.insert(random % DATA_VALUE_RANGE_MAX);
-	} else {
-		l.remove(random % DATA_VALUE_RANGE_MAX);
 	}
+	else {
+		// DEBUG("REMOVE", std::this_thread::get_id());
+		// printf("%d\n", val);
+		l.remove(val);
+	}
+	// DEBUG("REMOVE", std::this_thread::get_id());
 }
 
-template<typename List>
-void mixed(List& l, int random) {
+template <typename List>
+void mixed(List &l, int random)
+{
 	/* mixed operations: 6.25% update, 93.75% count */
-	auto choice = (random % (32*DATA_VALUE_RANGE_MAX))/DATA_VALUE_RANGE_MAX;
-	if(choice == 0) {
+	auto choice = (random % (32 * DATA_VALUE_RANGE_MAX)) / DATA_VALUE_RANGE_MAX;
+	if (choice == 0)
+	{
 		l.insert(random % DATA_VALUE_RANGE_MAX);
-	} else if(choice == 1) {
+	}
+	else if (choice == 1)
+	{
 		l.remove(random % DATA_VALUE_RANGE_MAX);
-	} else {
+	}
+	else
+	{
 		l.count(random % DATA_VALUE_RANGE_MAX);
 	}
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 	/* get number of threads from command line */
-	if(argc < 2) {
+	if (argc < 2)
+	{
 		std::cerr << u8"Please specify number of worker threads: " << argv[0] << u8" <number>\n";
 		std::exit(EXIT_FAILURE);
 	}
 	std::istringstream ss(argv[1]);
 	int threadcnt;
-	if (!(ss >> threadcnt)) {
+	if (!(ss >> threadcnt))
+	{
 		std::cerr << u8"Invalid number of threads '" << argv[1] << u8"'\n";
 		std::exit(EXIT_FAILURE);
 	}
@@ -61,28 +86,31 @@ int main(int argc, char* argv[]) {
 
 	/* example use of benchmarking */
 	{
-		list_cg_mutex<int> l1;
-		/* prefill list with 1024 elements */
+		list_fg_mutex<int> l1;
+		// /* prefill list with 1024 elements */
 		for(int i = 0; i < DATA_PREFILL; i++) {
 			l1.insert(uniform_dist(engine));
 		}
-		benchmark(threadcnt, u8"non-thread-safe read", [&l1](int random){
-			read(l1, random);
-		});
-		benchmark(threadcnt, u8"non-thread-safe update", [&l1](int random){
-			update(l1, random);
-		});
+
+		// benchmark(threadcnt, u8"non-thread-safe read", [&l1](int random){
+		// 	read(l1, random);
+		// });
+		// system("clear");
+		printf("\n### Starting update benchmark ###\n");
+		
+		benchmark(threadcnt, u8"non-thread-safe update", [&l1](int random)
+				  { update(l1, random); });
 	}
-	{
-		/* start with fresh list: update test left list in random size */
-		list_cg_mutex<int> l1;
-		/* prefill list with 1024 elements */
-		for(int i = 0; i < DATA_PREFILL; i++) {
-			l1.insert(uniform_dist(engine));
-		}
-		benchmark(threadcnt, u8"non-thread-safe mixed", [&l1](int random){
-			mixed(l1, random);
-		});
-	}
+	// {
+	// 	/* start with fresh list: update test left list in random size */
+	// 	list_fg_mutex<int> l1;
+	// 	/* prefill list with 1024 elements */
+	// 	for(int i = 0; i < DATA_PREFILL; i++) {
+	// 		l1.insert(uniform_dist(engine));
+	// 	}
+	// 	benchmark(threadcnt, u8"non-thread-safe mixed", [&l1](int random){
+	// 		mixed(l1, random);
+	// 	});
+	// }
 	return EXIT_SUCCESS;
 }

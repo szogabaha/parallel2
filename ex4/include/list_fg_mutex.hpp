@@ -49,6 +49,11 @@ public:
 		last = new end_node<T>();
 		first->next = last;
 	}
+
+	~list_fg_mutex() {
+		delete first;
+		delete last;
+	}
     /* insert v into the list */
     void insert(T v) {
 			/* first find position */

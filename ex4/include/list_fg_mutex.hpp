@@ -12,6 +12,7 @@ class fine_node {
 	public:
 		T value;
 		fine_node<T>* next;
+		bool blocking;
 
 		void lock() {
 			this->mutex.lock();
@@ -20,16 +21,13 @@ class fine_node {
 		void unlock() {
 			this->mutex.unlock();
 		}
-		virtual bool isblocking() {
-			return false;
-		}
-};
-
-template<typename T>
-class end_node: public fine_node<T> {
-	public:
 		bool isblocking() {
-			return true;
+			return this->blocking;
+		}
+
+
+		fine_node(bool blocking = false) {
+			this->blocking = blocking;
 		}
 };
 /**
@@ -44,8 +42,8 @@ private:
 
 public:
 	list_fg_mutex(){
-		first = new end_node<T>();
-		last = new end_node<T>();
+		first = new fine_node<T>(true);
+		last = new fine_node<T>(true);
 		first->next = last;
 	}
 

@@ -5,8 +5,8 @@
 
 struct qnode
 {
-    bool locked;
-    qnode* my_pred;
+    qnode() : locked(true) {}
+    std::atomic_bool locked; // ThreadSanitizers detected a data race -> solution: make atomic
 };
 
 class CLHLock
@@ -14,10 +14,11 @@ class CLHLock
 private:
     std::atomic<qnode*> tail;
 public:
-    CLHLock(/* args */);
+    CLHLock();
 
     void lock();
     void unlock();
+    
     ~CLHLock();
 };
 

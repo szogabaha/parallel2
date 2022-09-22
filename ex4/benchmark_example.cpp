@@ -7,6 +7,7 @@
 #include "benchmark.hpp"
 #include "sorted_list.hpp"
 #include "list_cg_mutex.hpp"
+#include "list_fg_clh.hpp"
 
 static const int DATA_VALUE_RANGE_MIN = 0;
 static const int DATA_VALUE_RANGE_MAX = 256;
@@ -61,11 +62,12 @@ int main(int argc, char* argv[]) {
 
 	/* example use of benchmarking */
 	{
-		list_cg_mutex<int> l1;
+		list_fg_clh<int> l1;
 		/* prefill list with 1024 elements */
 		for(int i = 0; i < DATA_PREFILL; i++) {
 			l1.insert(uniform_dist(engine));
 		}
+		printf("Start benchmark\n");
 		benchmark(threadcnt, u8"non-thread-safe read", [&l1](int random){
 			read(l1, random);
 		});
@@ -75,7 +77,7 @@ int main(int argc, char* argv[]) {
 	}
 	{
 		/* start with fresh list: update test left list in random size */
-		list_cg_mutex<int> l1;
+		list_fg_clh<int> l1;
 		/* prefill list with 1024 elements */
 		for(int i = 0; i < DATA_PREFILL; i++) {
 			l1.insert(uniform_dist(engine));

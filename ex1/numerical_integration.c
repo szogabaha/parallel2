@@ -1,3 +1,4 @@
+#include "timer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
@@ -149,6 +150,7 @@ void *calculate_integral_dynamic(void *parameters)
 
 int main(int argc, char *argv[])
 {
+    double start, end;
     bool dyn = parse_args(argc, argv);
 
     // Calculate the height of trapezoids
@@ -172,6 +174,7 @@ int main(int argc, char *argv[])
         int trapezoids_per_thread = trapezoids_number / threads_number;
         int remaining_trapezoids = trapezoids_number % threads_number;
         double next_start = 0.0;
+        GET_TIME(start);
         for (int i = 0; i < threads_number; i++)
         {
             data_t *data = (data_t *)calloc(1, sizeof(data_t));
@@ -189,6 +192,8 @@ int main(int argc, char *argv[])
         {
             pthread_join(pthreads[i], NULL);
         }
+        GET_TIME(end);
+        printf("elapsed: %e\n", end - start);
     }
     else
     {
@@ -198,6 +203,7 @@ int main(int argc, char *argv[])
             printf("Failed to create mutex!\n");
             exit(0);
         }
+        GET_TIME(start);
         for (int i = 0; i < threads_number; i++)
         {
             data_dyn_t *data = (data_dyn_t *)calloc(1, sizeof(data_dyn_t));
@@ -213,6 +219,8 @@ int main(int argc, char *argv[])
         {
             pthread_join(pthreads[i], NULL);
         }
+        GET_TIME(end);
+        printf("elapsed: %e\n", end - start);
     }
 
     printf("%28s:\t%.18f\n", "Integral approximated value", area_sum);

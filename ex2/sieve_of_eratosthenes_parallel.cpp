@@ -139,12 +139,12 @@ Chunk* create_chunks(Array<Natural> array, int thread_num, Array<int> seeds) {
     
     Chunk* chunks = new Chunk[thread_num];
     for(int i = 0; i<thread_num -1; i++){
-        Chunk newChunk = Chunk(i * partial_size, partial_size, seeds);
+        Chunk newChunk = Chunk(array[0].getValue() + i * partial_size, partial_size, seeds);
         chunks[i] = newChunk;
     }
 
     int last_partition_size = partial_size + (array.size() % thread_num);
-    chunks[thread_num -1] = Chunk((thread_num - 1) * partial_size, last_partition_size, seeds);
+    chunks[thread_num -1] = Chunk(array[0].getValue() + (thread_num - 1) * partial_size, last_partition_size, seeds);
     return chunks;
 }
 

@@ -121,10 +121,11 @@ void *calculate_integral(void *parameters)
 
 int get_and_inc_counter()
 {
+    int now;
     pthread_mutex_lock(&get_and_inc);
-    counter++;
+    now = counter++;
     pthread_mutex_unlock(&get_and_inc);
-    return counter;
+    return now;
 }
 
 void *calculate_integral_dynamic(void *parameters)

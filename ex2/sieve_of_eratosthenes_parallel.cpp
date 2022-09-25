@@ -59,7 +59,7 @@ template <class T> T& Array<T>::operator[] (const int index) {
 Array<Natural> create_array(size_t min, size_t last_number) {
     size_t size = min == 0 ? last_number + 1 : last_number - min + 1;
     Natural* array = new Natural[size];
-    for(int i = 0; i < size; i++){
+    for(size_t i = 0; i < size; i++){
         array[i] = Natural(i+min);
     }
 
@@ -92,7 +92,7 @@ class Chunk {
         }
 
         void print_unmarked(){
-            for(int i = 0; i < numbers.size(); i++) {
+            for(size_t i = 0; i < numbers.size(); i++) {
                 if(!numbers[i].isMarked()){
                     std::cout << numbers[i].getValue() << " ";
                 }
@@ -101,7 +101,7 @@ class Chunk {
 };
 
 Natural getNextUnmarked(Natural n, Array<Natural> array) {
-    for(int i = n.getValue() + 1; i < array.size(); i++ ) {
+    for(size_t i = n.getValue() + 1; i < array.size(); i++ ) {
         if(!array[i].isMarked()) {
             return array[i];
         }
@@ -151,8 +151,7 @@ Chunk* create_chunks(Array<Natural> array, int thread_num, Array<int> seeds) {
 void* mark_primes_in_chunk(void* args) {
     Chunk* chunk = (Chunk*) args;
 
-    Natural k = Natural(chunk->numbers[0]);
-    for(int seed_id = 0; seed_id < chunk -> seeds.size(); seed_id++){
+    for(size_t seed_id = 0; seed_id < chunk -> seeds.size(); seed_id++){
         for(int i = 0; i < chunk -> size(); i ++){
             if(chunk ->numbers[i].getValue() % chunk ->seeds[seed_id] == 0) {
                 chunk ->numbers[i].mark();
@@ -173,7 +172,7 @@ int main(int argc, char** argv) {
     Array<Natural> remaining = create_array(min, max);
     
     Chunk* chunks = create_chunks(remaining, number_of_threads, seeds);
-    pthread_t p_threads[number_of_threads];
+    pthread_t* p_threads = (pthread_t*)malloc(sizeof(pthread_t) * number_of_threads);
     pthread_attr_t attr; 
 	pthread_attr_init(&attr);
 
@@ -189,7 +188,7 @@ int main(int argc, char** argv) {
     if(argc == 4 && strcmp(argv[3],"--time") == 0) {
         std::cout << duration_cast<microseconds>(stop - start).count(); //µs
     } else {
-        for (int i = 0; i< seeds.size(); i++){
+        for (size_t i = 0; i< seeds.size(); i++){
             std::cout<<seeds[i] << " ";
         }
 
@@ -197,4 +196,6 @@ int main(int argc, char** argv) {
             chunks[i].print_unmarked();
         }
     }
+
+    free(p_threads);
 }

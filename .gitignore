@@ -5,6 +5,6 @@ ex3/flaky/clh*
 ex3/flaky/include/[clhCLH]*
 # don't version the generated binaries
 numerical_integration
-sieve_of_eratosthenens_parallel
+sieve_of_eratosthenes_parallel
 main
 benchmark_example

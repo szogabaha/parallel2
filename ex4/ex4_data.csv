@@ -1,0 +1,66 @@
+Implementation,Benchmark,Number of operations,Threads
+coarse grained mutex,read, 766.611667,1
+coarse grained mutex,update, 63.284834,1
+coarse grained mutex,mixed, 159.785163,1
+coarse grained mutex,read, 345.783113,2
+coarse grained mutex,update, 48.560331,2
+coarse grained mutex,mixed, 118.885285,2
+coarse grained mutex,read, 356.893584,4
+coarse grained mutex,update, 42.473892,4
+coarse grained mutex,mixed, 105.137620,4
+coarse grained mutex,read,351.521324,8
+coarse grained mutex,update, 34.019140,8
+coarse grained mutex,mixed, 90.508724,8
+coarse grained mutex,read, 335.595416,16
+coarse grained mutex,update,27.857593,16
+coarse grained mutex,mixed, 73.153126,16
+fine grained mutex,read, 89.029415,1
+fine grained mutex,update, 49.921326,1
+fine grained mutex,mixed,79.594302,1
+fine grained mutex,read, 55.995463,2
+fine grained mutex,update, 45.693650,2
+fine grained mutex,mixed, 56.427088,2
+fine grained mutex,read,86.178157,4
+fine grained mutex,update, 46.006263,4
+fine grained mutex,mixed, 100.622854,4
+fine grained mutex,read, 152.435406,8
+fine grained mutex,update, 70.804803,8
+fine grained mutex,mixed, 140.975992,8
+fine grained mutex,read, 175.966888,16
+fine grained mutex,update, 72.079199,16
+fine grained mutex,mixed, 142.782039,16
+coarse grained TATAS lock,read, 744.470726,1
+coarse grained TATAS lock,update, 58.547854,1
+coarse grained TATAS lock,mixed, 164.535627,1
+coarse grained TATAS lock,read, 675.266481,2
+coarse grained TATAS lock,update, 52.503753,2
+coarse grained TATAS lock,mixed, 119.574806,2
+coarse grained TATAS lock,read, 582.254473,4
+coarse grained TATAS lock,update, 52.065519,4
+coarse grained TATAS lock,mixed, 131.539352,4
+coarse grained TATAS lock,read, 553.033113,8
+coarse grained TATAS lock,update, 45.831799,8
+coarse grained TATAS lock,mixed, 131.937482,8
+coarse grained TATAS lock,read, 480.144481,16
+coarse grained TATAS lock,update, 37.176117,16
+coarse grained TATAS lock,mixed, 111.192312,16
+fine grained TATAS lock,read, 59.750268,1
+fine grained TATAS lock,update, 34.218558,1
+fine grained TATAS lock,mixed, 54.650820,1
+fine grained TATAS lock,read, 49.246068,2
+fine grained TATAS lock,update, 31.830839,2
+fine grained TATAS lock,mixed, 51.219173,2
+fine grained TATAS lock,read, 86.206192,4
+fine grained TATAS lock,update, 46.407143,4
+fine grained TATAS lock,mixed, 92.792167,4
+fine grained TATAS lock,read, 163.521279,8
+fine grained TATAS lock,update, 78.340838,8
+fine grained TATAS lock,mixed, 176.415971,8
+fine grained TATAS lock,read, 228.261906,16
+fine grained TATAS lock,update, 107.072593,16
+fine grained TATAS lock,mixed, 239.237626,16
+fine grained CLH lock,read, 38.187790,1
+fine grained CLH lock,read, 34.594097,2
+fine grained CLH lock,read, 60.083409,4
+fine grained CLH lock,read, 116.306364,8
+fine grained CLH lock,read, 184.845360,16

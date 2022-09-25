@@ -1,5 +1,5 @@
 CXX=g++
-CFLAGS=-std=c++11 -g -Wall -Wpedantic -Werror -Wfloat-equal
+CFLAGS=-std=c++11 -g -Wall -Wpedantic -Wfloat-equal
 LDFLAGS=-lpthread -lm
 
 BIN=sieve_of_eratosthenes_parallel
